@@ -14,8 +14,11 @@ In this activity, we will continue working with the data from Activity 6 (Pivoti
 
 For this activity, you will need the `{tidyverse}` and `{broom}` packages.
 
-
-
+```{r}
+library(tidyverse)
+library(broom)
+library(readr)
+```
 
 ### The data
 
@@ -25,6 +28,10 @@ Note that the data we have is a slightly modified version of the original data s
 The result is a data frame where each row contains a different course and columns represent variables about the courses and professors.
 
 The data are stored in the repo's `data` folder as `evals-mod.csv`.
+
+```{r}
+evals <- read_csv(here::here("data", "evals-mod.csv") )
+```
 
 ### Data codebook
 
@@ -60,10 +67,10 @@ Complete the code chunk below by filling in the blanks so that you *create* a ne
 The [`rowwise`](https://dplyr.tidyverse.org/reference/rowwise.html) documentation will be helpful for seeing additional examples of using this function.  
 
 ```{r rowwise-mean}
-_____ <- _____ %>% 
+(evals <- evals %>% 
   rowwise() %>% 
-  ______(bty_avg = mean(c_across(___________:___________))) %>% 
-  ungroup()
+  mutate(bty_avg = mean(c_across(bty_f1lower:bty_m2upper))) %>% 
+  ungroup())
 ```
 
 The `rowwise` function works a lot like `group_by`, except that it groups the data frame one row at a time so that any operation applied to the data frame is done once per each row.
@@ -73,11 +80,16 @@ This is useful to calculate the mean beauty score for each row, but we do not wa
 
 Visualize the distribution of `score` (only).
 Describe this distribution and comment on what this tells you about how students rate courses.
-Is this what you expected to see?
-Why, or why not?
+Is this what you expected to see? Yes
+Why, or why not? Typically students like their professors more than they dont like them.
 Also, include any numerical summary statistics (uses a `dplyr::summarise` pipeline, not the `BASE::summary` function) that will help in making your response more effective.
 
 
+```{r}
+ggplot(data = evals, mapping = aes(score))+
+  geom_histogram()
+summary(evals$score)
+```
 
 
 **Response**:
@@ -95,6 +107,11 @@ Is this what you expected to see?
 Why, or why not?
 Also, include any numerical summary statistics (use a `dplyr::summarise` pipeline, not the `BASE::summary` function) that will help in making your response more effective.
 
+```{r}
+ggplot(evals, aes(x = score, y = bty_avg))+
+  geom_point(alpha = 0.5)+
+  geom_jitter()
+```
 
 
 
@@ -107,7 +124,11 @@ Is this what you expected to see?
 Why, or why not?
 Also, include any numerical summary statistics (use a `dplyr::summarise` pipeline, not the `BASE::summary` function) that will help in making your response more effective.
 
-
+```{r}
+ggplot(evals, aes(x = score, y = bty_avg, color = gender))+
+  geom_point(alpha = 0.5)+
+  geom_jitter()
+```
 
 
 **Response**:
@@ -124,15 +145,21 @@ lm(y ~ x1 + x2, data = df)
 
 Fit a linear model and assign it to `mod_bty_gender` to predict the average professor evaluation `score` by average beauty rating (`avg_bty`) and the professor's `gender`.
 
-
-
+```{r}
+mod_bty_gender <- lm(score ~ bty_avg + gender, data = evals)
+```
 
 Compare the output from simply running `mod_bty_gender` **and** using the `broom::tidy` function on your model object.
 Based on the `tidy` output, write the fitted linear model using appropriate variable names and model estimates.
+#score = 3.747 + 0.074*bty_avg + 0.172*gender(0-female, 1-male)
 Interpret the intercept and slopes of the linear model in the context of the data.
 Be sure to comment on whether each of these values makes sense in this context.
 Also, use your `{dplyr}` skills on this `tidy` output to only include the model terms, parameter estimates, and standard errors. 
 
+```{r}
+mod_bty_gender
+tidy(mod_bty_gender)
+```
 
 
 **Response**:
@@ -141,11 +168,21 @@ Also, use your `{dplyr}` skills on this `tidy` output to only include the model 
 Re-plot your last visualization, but now add the linear regression line(s) to this plot.
 Be sure to turn off the shading for the uncertainty of the line.
 
+```{r}
+predicted_df <- data.frame(evals_pred = predict(mod_bty_gender, evals))
+ggplot(evals, aes(x = bty_avg, y = score, color = gender))+
+  geom_point(alpha = 0.5)+
+  geom_jitter()+
+  geom_abline()
+```
 
 
 
 Use the `broom::glance` function to view model diagnostics.
 
+```{r}
+glance(mod_bty_gender)
+```
 
 
 

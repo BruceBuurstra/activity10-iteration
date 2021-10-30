@@ -30,7 +30,10 @@ And, although it is structured (hierarchical/tree based), HTML data is often not
 However, it is not loaded with the tidyverse so you will need to load it separately.
 In the space below, load `{tidyverse}` and `{rvest}`.
 
-
+```{r load_packages, include = FALSE}
+library(tidyverse)
+library(rvest)
+```
 
 The core functions that you may find useful are:
 
@@ -61,7 +64,7 @@ Below are instructions to get started using SelectorGadget, but you are welcome 
 
 What are the minimal CSS selectors for the following elements: a show's title, year, and content rating?
 
-
+canvas , a , .release_date
 
 
 First, we should make sure that we are allowed to.
@@ -81,7 +84,7 @@ paths_allowed("http://www.facebook.com")
 
 Are you able to scrape data from TMDB or facebook?
 
-
+We are able to scrape data from TMDB but not facebook.
 
 
 Below is the start of a `scrape_tmdb` function.
@@ -106,9 +109,9 @@ scrape_tmdb <- function(url){
   
   # Create a tibble containing all the scraped information
   tibble(
-    title = title,
-    year = year,
-    rating = rating,
+    #title = title,
+    #year = year,
+    #rating = rating,
     score = score
   )
   
@@ -118,6 +121,9 @@ scrape_tmdb <- function(url){
 
 Use your function to obtain the information from this TV Show: `https://www.themoviedb.org/tv/2382`
 
+```{r}
+scrape_tmdb("https://www.themoviedb.org/tv/2382")
+```
 
 
 
