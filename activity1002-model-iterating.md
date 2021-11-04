@@ -366,8 +366,13 @@ Now that we have the nested dataset, we can use `map` to fit a `lm` with
 the same variables to each nested `data`set. In general, we could do
 this like:
 
-    nested_data %>% 
-      mutate(model = map(data, ~lm(model, data = .)))
+``` r
+nested_data <- nested_data %>% 
+  mutate(model = map(data, ~lm(score ~ bty_avg + gender, data = .)))%>%
+  mutate(tidied = map(model, tidy))%>%
+  mutate(glanced = map(model, glance))%>%
+  mutate(augmented = map(model, augment))
+```
 
 Here, `model` is the specified linear equation that we wish to fit
 (e.g., `y ~ x1 + x2`).
@@ -404,19 +409,50 @@ regression coefficients for your three models (this would be a good
 opportunity to use a `facet_*` layer) and provide a brief discussion
 comparing these values.
 
-**Response**:
+``` r
+nested_data%>%
+  unnest(tidied)%>%
+  ggplot(aes(x = rank, y = estimate))+
+  geom_point()+
+  facet_wrap(~ term)
+```
+
+![](activity1002-model-iterating_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+**Response**: All have very low values for bty\_avg coefficient and not
+slighly as low for gendermale. The intercepts are all close to 4.
 
 `unnest` your dataset by the `glanced` column.. Plot the `r.squared`s
 for your three models and provide a brief discussion comparing these
 values and commenting on the models’ appropriateness.
 
-**Response**:
+``` r
+nested_data%>%
+  unnest(glanced)%>%
+  ggplot(aes(x = rank, y = r.squared))+
+  geom_point()
+```
+
+![](activity1002-model-iterating_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+**Response**: All do a very bad job of explaining the variance in the
+model. Teaching does the best a little above 0.2.
 
 `unnest` your dataset by the `glanced` column.. Plot the residuals
 vs. fitted values provide a brief discussion commenting on the models’
 appropriateness.
 
-**Response**:
+``` r
+nested_data%>%
+  unnest(augmented)%>%
+  ggplot(aes(x = .fitted, y = .resid))+
+  geom_point()
+```
+
+![](activity1002-model-iterating_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+**Response**: Seems to do very well, no apparent outliers and no general
+shapes or pattern.
 
 ## Attribution
 
